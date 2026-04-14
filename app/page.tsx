@@ -66,7 +66,6 @@ export default function EVreadyRegistrationPage() {
       address: '',
       city: '',
       mobile: '',
-      email: '',
       gender: undefined,
       profession: '',
       visitingDay: undefined,
@@ -240,12 +239,6 @@ export default function EVreadyRegistrationPage() {
                         field.onChange(e.target.value.replace(/\D/g, ''))
                       }
                     />
-                  )} />
-                </Field>
-
-                <Field label="Email" error={errors.email?.message}>
-                  <Controller name="email" control={control} render={({ field }) => (
-                    <Input {...field} placeholder="Enter your email" />
                   )} />
                 </Field>
 

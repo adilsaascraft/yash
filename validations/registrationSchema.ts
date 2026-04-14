@@ -28,8 +28,6 @@ export const EVEventRegistrationSchema = z.object({
     .trim()
     .regex(/^[6-9]\d{9}$/, "Enter a valid Indian mobile number"),
 
-  email: z.string().trim().email("Enter a valid email address"),
-
   gender: GenderEnum,
 
   profession: z.string().trim().min(2, "Profession is required"),
