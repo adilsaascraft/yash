@@ -64,7 +64,7 @@ export async function POST(req: Request) {
 
   // send SMS (non-blocking)
   try {
-   const qrLink = `${process.env.NEXT_PUBLIC_API_URL}`;
+   const qrLink = `${process.env.NEXT_PUBLIC_API_URL}/r/${regNum}`;
    await sendRegisterSMS({
     mobile: register.mobile,
     name: register.name,
