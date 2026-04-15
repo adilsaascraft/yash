@@ -1,15 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { QRCodeCanvas } from "qrcode.react";
 import * as htmlToImage from "html-to-image";
 import Image from "next/image";
 import { Download, Loader2 } from "lucide-react";
 
 export default function QRPage() {
-  const params = useParams();
-  const regNum = params?.regNum as string;
+  const searchParams = useSearchParams();
+  const regNum = searchParams.get("regNum"); // ✅ FIXED
 
   const [loading, setLoading] = useState(true);
 
@@ -20,7 +20,7 @@ export default function QRPage() {
 
   const downloadQrCard = async () => {
     const node = document.getElementById("qr-card");
-    if (!node) return;
+    if (!node || !regNum) return;
 
     const dataUrl = await htmlToImage.toPng(node, {
       backgroundColor: "#ffffff",
@@ -33,7 +33,7 @@ export default function QRPage() {
     link.click();
   };
 
-  // 🛑 HANDLE UNDEFINED CASE
+  // 🛑 HANDLE INVALID CASE
   if (!regNum) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -81,7 +81,7 @@ export default function QRPage() {
               className="absolute opacity-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
             />
 
-            {/* ✅ ONLY REGNUM */}
+            {/* ✅ QR with ONLY REGNUM */}
             <div className="bg-white p-4 rounded-xl border shadow-sm">
               <QRCodeCanvas value={regNum} size={160} />
             </div>
@@ -96,6 +96,7 @@ export default function QRPage() {
           </div>
         </div>
 
+        {/* DOWNLOAD BUTTON */}
         <button
           onClick={downloadQrCard}
           className="flex items-center justify-center gap-2 px-4 py-2 bg-green-700 text-white rounded w-full"
