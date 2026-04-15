@@ -185,7 +185,7 @@ export default function EVreadyRegistrationPage() {
                     6th Edition of Times Property Expo
                   </h1>
                   <p className="text-xs text-muted-foreground">
-                    An EV Initiative by The Times of India
+                    An Initiative by The Times of India
                   </p>
                   <p className="text-sm font-semibold text-green-700 mt-2">
                     Registration Form
