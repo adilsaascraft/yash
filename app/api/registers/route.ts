@@ -64,12 +64,14 @@ export async function POST(req: Request) {
 
   // send SMS (non-blocking)
   try {
+   
    const qrLink = `${process.env.NEXT_PUBLIC_API_URL}/r?regNum=${regNum}`;
+   const safeQrLink = qrLink.trim();
    await sendRegisterSMS({
     mobile: register.mobile,
     name: register.name,
     regNum: register.regNum,
-    qrLink,
+    safeQrLink,
    });
   } catch (e) {
    const error = e as Error & { response?: { data: unknown } };
