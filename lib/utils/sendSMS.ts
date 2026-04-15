@@ -12,7 +12,7 @@ export async function sendRegisterSMS({
   qrLink: string;
 }) {
   try {
-    const message = `Dear ${name}, your registration ID is ${regNum}. Download your QR here: ${qrLink}.`;
+    const message = `Dear ${name}, your registration ID is ${regNum}. Download your QR here: ${qrLink}. Do not share this link. - SaaScraft Studio`;
 
     const payload = {
       APIKey: process.env.SMS_GATEWAY_API_KEY,
