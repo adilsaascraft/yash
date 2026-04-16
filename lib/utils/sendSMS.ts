@@ -12,11 +12,9 @@ export async function sendRegisterSMS({
  safeQrLink: string;
 }) {
  try {
-  // ✅ Clean name (remove prefix)
   const cleanName = name.replace(/^(Mr|Mrs|Ms|Dr|Er)\.\s*/i, "").trim();
-
-  // ✅ EXACT TEMPLATE MATCH
-  const message = `Dear ${cleanName}, registration id for ${cleanName} is ${regNum} and QR Links is ${safeQrLink} Do not share this info to anyone for security reasons. - SaaScraft Studio`;
+  const eventName = "6th Edition of Times Property Expo";
+  const message = `Dear ${cleanName}, registration id for ${eventName} is ${regNum} and QR Links is ${safeQrLink} Do not share this info to anyone for security reasons. - SaaScraft Studio`;
   const payload = {
    APIKey: process.env.SMS_GATEWAY_API_KEY,
    senderid: process.env.SMS_GATEWAY_SENDER_ID,
