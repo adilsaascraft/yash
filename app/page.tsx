@@ -208,7 +208,7 @@ export default function EVreadyRegistrationPage() {
                   )} />
                 </Field>
 
-                <Field label="Number of Accompany Person" error={errors.accompany?.message}>
+                <Field label="Person Add's" error={errors.accompany?.message}>
                   <Controller
                     name="accompany"
                     control={control}
@@ -217,7 +217,7 @@ export default function EVreadyRegistrationPage() {
                         onValueChange={field.onChange}
                         value={field.value ?? ''}
                       >
-                        <SelectTrigger className='w-full p-3'><SelectValue placeholder="Select visiting day" /></SelectTrigger>
+                        <SelectTrigger className='w-full p-3'><SelectValue placeholder="Select accompany" /></SelectTrigger>
                         <SelectContent>
                           <SelectItem value="1">1</SelectItem>
                           <SelectItem value="2">2</SelectItem>
