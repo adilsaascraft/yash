@@ -16,7 +16,7 @@ export async function sendRegisterSMS({
   const cleanName = name.replace(/^(Mr|Mrs|Ms|Dr|Er)\.\s*/i, "").trim();
 
   // ✅ EXACT TEMPLATE MATCH
-  const message = `Dear ${cleanName}, registration id for 6th Edition of Times Property Expo is ${regNum} and QR Links is ${safeQrLink}. Do not share this info to anyone for security reasons. - SaaScraft Studio`;
+  const message = `Dear ${cleanName}, registration id for 6th Edition of Times Property Expo is ${regNum} and QR Links is ${safeQrLink} Do not share this info to anyone for security reasons. - SaaScraft Studio`;
   const payload = {
    APIKey: process.env.SMS_GATEWAY_API_KEY,
    senderid: process.env.SMS_GATEWAY_SENDER_ID,
