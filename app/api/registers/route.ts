@@ -11,25 +11,18 @@ export async function POST(req: Request) {
 
   const {
    name,
-   age,
    address,
-   city,
    mobile,
-   gender,
    profession,
-   visitingDay,
+   accompany,
   } = body;
 
   // validation
   if (
    !name ||
-   !age ||
    !address ||
-   !city ||
    !mobile ||
-   !gender ||
-   !profession ||
-   !visitingDay
+   !profession
   ) {
    return NextResponse.json(
     { success: false, message: "All fields required" },

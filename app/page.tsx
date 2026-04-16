@@ -56,33 +56,19 @@ export default function EVreadyRegistrationPage() {
     handleSubmit,
     control,
     reset,
-    setValue,
     formState: { errors },
   } = useForm<FormInput, any, FormOutput>({
     resolver: zodResolver(EVEventRegistrationSchema),
     defaultValues: webinarDraft || {
       name: '',
-      age: undefined,
       address: '',
-      city: '',
       mobile: '',
-      gender: undefined,
       profession: '',
-      visitingDay: undefined,
+      accompany: '',
     },
   })
 
   const watchedValues = useWatch({ control })
-
-  /* -------- AUTO CITY -------- */
-  useEffect(() => {
-    fetch('https://ipapi.co/json/')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data?.city) setValue('city', data.city)
-      })
-      .catch(() => { })
-  }, [setValue])
 
   useEffect(() => {
     if (!success) setDraft(DRAFT_KEY, watchedValues)
@@ -162,9 +148,9 @@ export default function EVreadyRegistrationPage() {
     <div className="flex min-h-svh flex-col bg-gradient-to-b from-green-50 to-green-100">
 
       {/* Banner */}
-      <div className="relative w-full h-[180px] md:h-[420px] overflow-hidden">
+      <div className="relative w-full h-[140px] md:h-[580px] overflow-hidden">
         <Image
-          src="/2.png"
+          src="/banner.png"
           loading="eager"
           alt="EV Event"
           fill
@@ -197,43 +183,17 @@ export default function EVreadyRegistrationPage() {
                     <Input {...field} placeholder="Enter your full name" />
                   )} />
                 </Field>
-
-                <Field label="Age" error={errors.age?.message}>
-                  <Controller
-                    name="age"
-                    control={control}
-                    render={({ field }) => (
-                      <Input
-                        type="number"
-                        placeholder="Enter your age"
-                        value={
-                          typeof field.value === 'number' || typeof field.value === 'string'
-                            ? field.value
-                            : ''
-                        }
-                        onChange={(e) => field.onChange(e.target.value)}
-                      />
-                    )}
-                  />
-                </Field>
-
-                <Field label="Address" error={errors.address?.message}>
+                <Field label="Area" error={errors.address?.message}>
                   <Controller name="address" control={control} render={({ field }) => (
-                    <Input {...field} placeholder="Enter your address" />
+                    <Input {...field} placeholder="Enter your area" />
                   )} />
                 </Field>
 
-                <Field label="City" error={errors.city?.message}>
-                  <Controller name="city" control={control} render={({ field }) => (
-                    <Input {...field} placeholder="Auto detected city" />
-                  )} />
-                </Field>
-
-                <Field label="Mobile" error={errors.mobile?.message}>
+                <Field label="Mobile Number" error={errors.mobile?.message}>
                   <Controller name="mobile" control={control} render={({ field }) => (
                     <Input
                       {...field}
-                      placeholder="Enter 10 digit mobile"
+                      placeholder="Enter 10 digit mobile number"
                       maxLength={10}
                       onChange={(e) =>
                         field.onChange(e.target.value.replace(/\D/g, ''))
@@ -242,32 +202,15 @@ export default function EVreadyRegistrationPage() {
                   )} />
                 </Field>
 
-                <Field label="Gender" error={errors.gender?.message}>
-                  <Controller
-                    name="gender"
-                    control={control}
-                    render={({ field }) => (
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <SelectTrigger className='w-full p-3'><SelectValue placeholder="Select gender" /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="male">Male</SelectItem>
-                          <SelectItem value="female">Female</SelectItem>
-                          <SelectItem value="other">Other</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    )}
-                  />
-                </Field>
-
                 <Field label="Profession" error={errors.profession?.message}>
                   <Controller name="profession" control={control} render={({ field }) => (
                     <Input {...field} placeholder="Enter your profession" />
                   )} />
                 </Field>
 
-                <Field label="Visiting Day" error={errors.visitingDay?.message}>
+                <Field label="Number of Accompany Person" error={errors.accompany?.message}>
                   <Controller
-                    name="visitingDay"
+                    name="accompany"
                     control={control}
                     render={({ field }) => (
                       <Select
@@ -276,9 +219,11 @@ export default function EVreadyRegistrationPage() {
                       >
                         <SelectTrigger className='w-full p-3'><SelectValue placeholder="Select visiting day" /></SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="day1">Saturday, 18 April 2026</SelectItem>
-                          <SelectItem value="day2">Sunday, 19 April 2026</SelectItem>
-                          <SelectItem value="all">Both Day (18–19 April 2026)</SelectItem>
+                          <SelectItem value="1">1</SelectItem>
+                          <SelectItem value="2">2</SelectItem>
+                          <SelectItem value="3">3</SelectItem>
+                          <SelectItem value="4">4</SelectItem>
+                          <SelectItem value="5">5</SelectItem>
                         </SelectContent>
                       </Select>
                     )}
