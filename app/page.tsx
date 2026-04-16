@@ -208,7 +208,7 @@ export default function EVreadyRegistrationPage() {
                   )} />
                 </Field>
 
-                <Field label="Person Add's" error={errors.accompany?.message}>
+                <Field label="Persons Add's" error={errors.accompany?.message}>
                   <Controller
                     name="accompany"
                     control={control}
