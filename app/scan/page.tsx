@@ -24,6 +24,7 @@ type ScanResult =
       message: string
       name: string
       regNum: string
+      mobile: string
     }
   | {
       type: 'error'
@@ -133,7 +134,9 @@ export default function QrScanner() {
       )
 
       const data = await res.json()
-      if (!res.ok) throw new Error(data.message)
+      if (!data.success) {
+        throw new Error(data.message)
+      }
 
       playBeep('success')
       navigator.vibrate?.(120)
@@ -141,8 +144,9 @@ export default function QrScanner() {
       setResult({
         type: 'success',
         message: data.message,
-        name: data.data.name,
         regNum: data.data.regNum,
+        name: data.data.name,
+        mobile: data.data.mobile,
       })
 
       mutate()

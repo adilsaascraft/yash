@@ -28,11 +28,14 @@ export async function POST(req: Request) {
     }
 
     if (register.dayTwo === 'Delivered') {
-      return NextResponse.json({
-        success: false,
-        message: 'Day 2 already scanned',
-        data: register,
-      })
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Day 2 already scanned',
+          data: register,
+        },
+        { status: 404 },
+      )
     }
 
     register.dayTwo = 'Delivered'
