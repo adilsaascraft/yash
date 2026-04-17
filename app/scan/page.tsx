@@ -230,10 +230,13 @@ export default function QrScanner() {
           {result.type === 'success' && (
             <>
               <p className="text-sm">
+                <span className="font-medium">Reg No:</span> {result.regNum}
+              </p>
+              <p className="text-sm">
                 <span className="font-medium">Name:</span> {result.name}
               </p>
               <p className="text-sm">
-                <span className="font-medium">Reg No:</span> {result.regNum}
+                <span className="font-medium">Mobile:</span> {result.mobile}
               </p>
             </>
           )}
