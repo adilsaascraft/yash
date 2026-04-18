@@ -1,445 +1,108 @@
-'use client'
+"use client"
 
-import { useEffect, useRef, useState } from 'react'
-import Image from 'next/image'
-import useSWR from 'swr'
-import { Html5Qrcode } from 'html5-qrcode'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { CheckCircle2, XCircle } from 'lucide-react'
-import { toast } from 'sonner'
+import { useRouter } from "next/navigation"
+import { motion } from "framer-motion"
+import { Card, CardContent } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import Image from "next/image"
+import { ArrowLeft, Smartphone, ScanLine } from "lucide-react"
 
-type ScanDay = 'day1' | 'day2' 
+export default function ScanPage() {
+  const router = useRouter()
 
-const DAY_API: Record<ScanDay, string> = {
-  day1: '/api/registers/day1',
-  day2: '/api/registers/day2',
-}
-
-const fetcher = (url: string) => fetch(url).then((r) => r.json())
-
-type ScanResult =
-  | {
-      type: 'success'
-      message: string
-      name: string
-      regNum: string
-      mobile: string
-    }
-  | {
-      type: 'error'
-      message: string
-    }
-  | null
-
-export default function QrScanner() {
-  const scannerRef = useRef<Html5Qrcode | null>(null)
-
-  const [activeDay, setActiveDay] = useState<ScanDay | null>(null)
-  const [isScanning, setIsScanning] = useState(false)
-  const [result, setResult] = useState<ScanResult>(null)
-
-  // ==========================
-  // Live Count (SWR)
-  // ==========================
-  const { data, mutate } = useSWR(
-    activeDay
-      ? `${process.env.NEXT_PUBLIC_API_URL}${DAY_API[activeDay]}`
-      : null,
-    fetcher,
-  )
-
-  const count = data?.count ?? 0
-
-  // ==========================
-  // Professional Beep
-  // ==========================
-  const playBeep = (type: 'success' | 'error') => {
-    const ctx = new AudioContext()
-    const osc = ctx.createOscillator()
-    const gain = ctx.createGain()
-
-    osc.frequency.value = type === 'success' ? 880 : 220
-    gain.gain.value = 0.15
-
-    osc.connect(gain)
-    gain.connect(ctx.destination)
-
-    osc.start()
-    osc.stop(ctx.currentTime + 0.15)
-  }
-
-  const stopScanner = async () => {
-    if (scannerRef.current) {
-      try {
-        await scannerRef.current.stop()
-        await scannerRef.current.clear()
-      } catch {
-        // ignore errors
-      } finally {
-        scannerRef.current = null
-        setIsScanning(false)
-      }
-    }
-  }
-
-  // ==========================
-  // Start Scan (SINGLE)
-  // ==========================
-  const startScan = async () => {
-    if (!activeDay) {
-      toast.error('Please select a day before scanning')
-      return
-    }
-
-    // If already scanning, prevent duplicate
-    if (isScanning) return
-
-    setResult(null)
-
-    const scanner = new Html5Qrcode('qr-reader')
-    scannerRef.current = scanner
-
-    try {
-      await scanner.start(
-        { facingMode: 'environment' },
-        { fps: 10, qrbox: { width: 260, height: 260 } },
-
-        async (decodedText) => {
-          await stopScanner()
-          await markDelivered(decodedText)
-        },
-
-        () => {},
-      )
-
-      setIsScanning(true)
-    } catch {
-      toast.error('Camera permission denied')
-    }
-  }
-
-  // ==========================
-  // API Call
-  // ==========================
-  const markDelivered = async (regNum: string) => {
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}${DAY_API[activeDay!]}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ regNum }),
-        },
-      )
-
-      const data = await res.json()
-      if (!data.success) {
-        throw new Error(data.message)
-      }
-
-      playBeep('success')
-      navigator.vibrate?.(120)
-
-      setResult({
-        type: 'success',
-        message: data.message,
-        regNum: data.data.regNum,
-        name: data.data.name,
-        mobile: data.data.mobile,
-      })
-
-      mutate()
-    } catch (err: any) {
-      playBeep('error')
-      navigator.vibrate?.([80, 40, 80])
-
-      setResult({
-        type: 'error',
-        message: err.message || 'Scan failed',
-      })
-    }
-  }
-
-  useEffect(() => {
-    if (!activeDay) return
-
-    // When day changes → stop previous scanner
-    stopScanner()
-
-    // Clear previous result
-    setResult(null)
-  }, [activeDay])
-
-  // Cleanup
-  useEffect(() => {
-    return () => {
-      stopScanner()
-    }
-  }, [])
+  const cards = [
+    {
+      title: "Mobile Scan",
+      icon: Smartphone,
+      route: "/scan/mobile",
+    },
+    {
+      title: "Zebra Scan",
+      icon: ScanLine,
+      route: "/scan/zebra",
+    },
+  ]
 
   return (
-    <div className="space-y-6">
-      {/* ---------------- BANNER ---------------- */}
-      <div className="relative w-full overflow-hidden">
+    <div className="min-h-screen bg-background flex flex-col items-center">
+
+      {/* 🔥 Banner with Back Button */}
+      <div className="relative w-full">
         <Image
           src="/banner.png"
-          alt="Coffee Banner"
+          alt="Banner"
           width={1536}
-          height={453}
+          height={380}
           priority
-          sizes="100vw"
           className="w-full h-auto object-contain"
         />
-        <div className="absolute inset-0 bg-orange-900/30" />
-      </div>
 
-      {/* ---------------- DAY SELECT ---------------- */}
-      <div className="flex justify-center gap-3">
-        {(['day1', 'day2'] as ScanDay[]).map((day) => (
-          <Button
-            key={day}
-            variant={activeDay === day ? 'default' : 'outline'}
-            onClick={() => setActiveDay(day)}
-          >
-            {day.toUpperCase()}
-            {activeDay === day && (
-              <Badge className="ml-2" variant="secondary">
-                {count}
-              </Badge>
-            )}
-          </Button>
-        ))}
-      </div>
-
-      {/* ---------------- RESULT OVERLAY ---------------- */}
-      {result && (
-        <div
-          className={`mx-auto max-w-sm rounded-lg p-4 text-white space-y-2
-      ${result.type === 'success' ? 'bg-green-600' : 'bg-red-600'}
-    `}
+        {/* Back Button */}
+        <Button
+          onClick={() => router.back()}
+          size="icon"
+          className="absolute top-4 left-4 bg-white/90 hover:bg-white text-black shadow-md"
         >
-          <div className="flex items-center gap-2">
-            {result.type === 'success' ? <CheckCircle2 /> : <XCircle />}
-
-            {/* Main Message */}
-            <span className="font-bold text-base">{result.message}</span>
-          </div>
-
-          {/* Show details only if success */}
-          {result.type === 'success' && (
-            <>
-              <p className="text-sm">
-                <span className="font-medium">Reg No:</span> {result.regNum}
-              </p>
-              <p className="text-sm">
-                <span className="font-medium">Name:</span> {result.name}
-              </p>
-              <p className="text-sm">
-                <span className="font-medium">Mobile:</span> {result.mobile}
-              </p>
-            </>
-          )}
-        </div>
-      )}
-
-      {/* ---------------- SCANNER ---------------- */}
-      <div className="mx-auto w-full max-w-sm">
-        <div id="qr-reader" className="rounded-xl border overflow-hidden" />
+          <ArrowLeft />
+        </Button>
       </div>
 
-      {/* ---------------- ACTION ---------------- */}
-      <div className="max-w-sm mx-auto">
-        <Button onClick={startScan} disabled={isScanning} className="w-full">
-          {isScanning ? 'Scanning…' : 'Start Scan'}
-        </Button>
+      {/* Heading */}
+      <div className="text-center mt-6 mb-8 px-4">
+        <h1 className="text-3xl font-bold text-zinc-900">
+          Select Scan Type
+        </h1>
+        <p className="text-gray-500 mt-1">
+          Choose how you want to scan participants
+        </p>
+      </div>
+
+      {/* Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl px-4">
+
+        {cards.map((card, i) => {
+          const Icon = card.icon
+
+          return (
+            <motion.div
+              key={card.title}
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.1 }}
+              whileHover={{ scale: 1.05 }}
+            >
+              <Card
+                onClick={() => router.push(card.route)}
+                className="cursor-pointer rounded-2xl shadow-md hover:shadow-xl transition border"
+              >
+                <CardContent className="flex flex-col items-center justify-center h-36 gap-3">
+
+                  {/* Icon */}
+                  <div className="p-3 rounded-full bg-gray-100">
+                    <Icon className="h-7 w-7 text-gray-700" />
+                  </div>
+
+                  {/* Title */}
+                  <h2 className="text-lg font-semibold text-zinc-800">
+                    {card.title}
+                  </h2>
+
+                </CardContent>
+
+                {/* 🔥 Bottom CTA bar (same as your buttons) */}
+                <div className="px-4 pb-4">
+                  <Button
+                    className="w-full bg-sky-800 hover:bg-sky-900 text-white"
+                  >
+                    Start
+                  </Button>
+                </div>
+              </Card>
+            </motion.div>
+          )
+        })}
+
       </div>
     </div>
   )
 }
-
-// //zebra configured file
-
-// 'use client'
-
-// import { useEffect, useRef, useState } from 'react'
-// import useSWR from 'swr'
-// import { Button } from '@/components/ui/button'
-// import { Badge } from '@/components/ui/badge'
-// import { CheckCircle2, XCircle } from 'lucide-react'
-
-// type ScanDay = 'day1' | 'day2' | 'day3'
-
-// const DAY_API: Record<ScanDay, string> = {
-//   day1: '/api/registers/day1',
-//   day2: '/api/registers/day2',
-//   day3: '/api/registers/day3',
-// }
-
-// const fetcher = (url: string) => fetch(url).then((r) => r.json())
-
-// type ScanStatus = 'success' | 'error' | null
-
-// export default function ZebraGateScanner() {
-//   const inputRef = useRef<HTMLInputElement | null>(null)
-
-//   const [activeDay, setActiveDay] = useState<ScanDay | null>(null)
-//   const [status, setStatus] = useState<ScanStatus>(null)
-//   const [processing, setProcessing] = useState(false)
-//   const [scanValue, setScanValue] = useState('')
-
-//   // ======================
-//   // Live Count
-//   // ======================
-//   const { data, mutate } = useSWR(
-//     activeDay
-//       ? `${process.env.NEXT_PUBLIC_API_URL}${DAY_API[activeDay]}`
-//       : null,
-//     fetcher,
-//   )
-
-//   const count = data?.count ?? 0
-
-//   // ======================
-//   // Keep Input Focused
-//   // ======================
-//   useEffect(() => {
-//     const interval = setInterval(() => {
-//       inputRef.current?.focus()
-//     }, 200)
-
-//     return () => clearInterval(interval)
-//   }, [])
-
-//   // ======================
-//   // Reset on Day Change
-//   // ======================
-//   useEffect(() => {
-//     setScanValue('')
-//     setStatus(null)
-//   }, [activeDay])
-
-//   // ======================
-//   // Flash Effect
-//   // ======================
-//   const triggerFlash = (type: ScanStatus) => {
-//   setStatus(null) // clear first to prevent stacking
-
-//   requestAnimationFrame(() => {
-//     setStatus(type)
-//   })
-
-//   setTimeout(() => {
-//     setStatus(null)
-//   }, 900)
-// }
-
-//   // ======================
-//   // API Call
-//   // ======================
-//   const markAttendance = async (regNum: string) => {
-//   if (!activeDay || processing) return
-
-//   setProcessing(true)
-//   setStatus(null) // clear any previous flash immediately
-
-//   try {
-//     const res = await fetch(
-//       `${process.env.NEXT_PUBLIC_API_URL}${DAY_API[activeDay]}`,
-//       {
-//         method: 'POST',
-//         headers: { 'Content-Type': 'application/json' },
-//         body: JSON.stringify({ regNum }),
-//       },
-//     )
-
-//     const result = await res.json()
-
-//     if (!res.ok) throw new Error(result.message)
-
-//     triggerFlash('success')
-//     mutate()
-//   } catch {
-//     triggerFlash('error')
-//   } finally {
-//     setProcessing(false)
-//   }
-// }
-
-//   // ======================
-//   // Zebra Handler
-//   // ======================
-//   const handleScan = async (
-//     e: React.KeyboardEvent<HTMLInputElement>,
-//   ) => {
-//     if (e.key === 'Enter') {
-//       const value = scanValue.trim()
-
-//       if (!value) return
-
-//       setScanValue('')
-//       await markAttendance(value)
-//     }
-//   }
-
-//   return (
-//     <div
-//       className={`min-h-screen flex flex-col items-center justify-center px-6 transition-colors duration-75
-//       ${status === 'success' ? 'bg-green-600' : ''}
-//       ${status === 'error' ? 'bg-red-600' : ''}
-//     `}
-//     >
-//       {/* Hidden Scanner Input */}
-//       <input
-//         ref={inputRef}
-//         value={scanValue}
-//         onChange={(e) => setScanValue(e.target.value)}
-//         onKeyDown={handleScan}
-//         autoFocus
-//         inputMode="none"
-//         className="absolute opacity-0 pointer-events-none"
-//       />
-
-//       {/* Day Selection */}
-//       <div className="flex gap-4 mb-10">
-//         {(['day1', 'day2', 'day3'] as ScanDay[]).map((day) => (
-//           <Button
-//             key={day}
-//             size="lg"
-//             variant={activeDay === day ? 'default' : 'outline'}
-//             onClick={() => setActiveDay(day)}
-//             className="relative px-8"
-//           >
-//             {day.toUpperCase()}
-
-//             {activeDay === day && (
-//               <Badge
-//                 variant="secondary"
-//                 className="absolute -top-3 -right-3"
-//               >
-//                 {count}
-//               </Badge>
-//             )}
-//           </Button>
-//         ))}
-//       </div>
-
-//       {/* Scanner Display */}
-//       {activeDay && (
-//         <div className="text-center space-y-6">
-//           <h1 className="text-4xl font-bold tracking-wide">
-//             {activeDay.toUpperCase()} SCANNING
-//           </h1>
-
-//           {status === 'success' && (
-//             <CheckCircle2 size={140} className="text-white mx-auto" />
-//           )}
-
-//           {status === 'error' && (
-//             <XCircle size={140} className="text-white mx-auto" />
-//           )}
-//         </div>
-//       )}
-//     </div>
-//   )
-// }
