@@ -1,19 +1,12 @@
 'use client'
-import { useRouter } from "next/navigation"
+
+import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import useSWR from 'swr'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
-import { CheckCircle2, XCircle, X, ArrowLeft } from 'lucide-react'
-
-type ScanDay = 'day1' | 'day2'
-
-const DAY_API: Record<ScanDay, string> = {
-  day1: '/api/registers/day1',
-  day2: '/api/registers/day2',
-}
+import { ArrowLeft, CheckCircle2, X, XCircle } from 'lucide-react'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
@@ -26,83 +19,55 @@ type ScanResult = {
 } | null
 
 export default function ZebraGateScanner() {
- const router = useRouter()
-  const inputRef = useRef<HTMLInputElement | null>(null)
+  const router = useRouter()
+  const inputRef = useRef<HTMLInputElement>(null)
 
-  const [activeDay, setActiveDay] = useState<ScanDay | null>(null)
   const [scanValue, setScanValue] = useState('')
   const [processing, setProcessing] = useState(false)
   const [result, setResult] = useState<ScanResult>(null)
 
-  const { data, mutate } = useSWR(
-    activeDay
-      ? `${process.env.NEXT_PUBLIC_API_URL}${DAY_API[activeDay]}`
-      : null,
-    fetcher,
-  )
+  const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/registers/day1`
 
+  const { data, mutate } = useSWR(apiUrl, fetcher)
   const count = data?.count ?? 0
 
   useEffect(() => {
     inputRef.current?.focus()
-  }, [activeDay, result])
+  }, [result])
 
   const markAttendance = async (regNum: string) => {
-    if (!activeDay) {
-      toast.error('Please select a day first', { duration: 2000 })
-      return
-    }
-
-    if (processing) return
+    if (!regNum || processing) return
 
     setProcessing(true)
     setResult(null)
 
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}${DAY_API[activeDay]}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ regNum }),
+      const res = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-      )
+        body: JSON.stringify({ regNum }),
+      })
 
       const json = await res.json()
+      const attendee = json.data || {}
 
-      if (!res.ok) {
-        throw new Error(json?.message || 'Scan failed')
-      }
+      setResult({
+        type: json.success ? 'success' : 'error',
+        message: json.message,
+        name: attendee.name || '-',
+        mobile: attendee.mobile || '-',
+        regNum: attendee.regNum || regNum,
+      })
 
-      const attendee = json?.data || {}
-
-      // ✅ SUCCESS TRUE
-      if (json.success === true) {
-        setResult({
-          type: 'success',
-          message: json.message,
-          name: attendee.name || '-',
-          mobile: attendee.mobile || '-',
-          regNum: attendee.regNum || regNum,
-        })
-
+      if (json.success) {
         mutate()
-      }
-
-      // 🔴 BUSINESS LOGIC FAILURE (Already scanned etc.)
-      else if (json.success === false) {
-        setResult({
-          type: 'error',
-          message: json.message,
-          name: attendee.name || '-',
-          mobile: attendee.mobile || '-',
-          regNum: attendee.regNum || regNum,
-        })
       }
 
       setScanValue('')
     } catch (err: any) {
-      toast.error(err?.message || 'Scan failed', { duration: 2000 })
+      toast.error(err.message || 'Scan failed')
       setScanValue('')
     } finally {
       setProcessing(false)
@@ -112,115 +77,84 @@ export default function ZebraGateScanner() {
 
   const handleKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
-      const value = scanValue.trim()
-      if (!value) return
-      await markAttendance(value)
+      await markAttendance(scanValue.trim())
     }
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center bg-background">
-      {/* Banner */}
-      <Image
-        src="/banner.png"
-        alt="Banner"
-        width={1536}
-        height={380}
-        priority
-        sizes="100vw"
-        className="w-full h-auto object-contain"
-      />
-       {/* Back Button */}
+    <div className="min-h-screen bg-background">
+      <div className="relative">
+        <Image
+          src="/banner.png"
+          alt="Banner"
+          width={1536}
+          height={380}
+          priority
+          className="h-auto w-full object-contain"
+        />
+
         <Button
-          onClick={() => router.back()}
           size="icon"
-          className="absolute top-4 left-4 bg-white/90 hover:bg-white text-black shadow-md"
+          onClick={() => router.back()}
+          className="absolute left-4 top-4 bg-white/90 text-black shadow-md hover:bg-white"
         >
           <ArrowLeft />
         </Button>
-
-      {/* Day Tabs */}
-      <div className="flex justify-center gap-3 m-4">
-        {(['day1', 'day2'] as ScanDay[]).map((day) => {
-          const isActive = activeDay === day
-
-          return (
-            <Button
-              key={day}
-              variant={isActive ? 'default' : 'outline'}
-              onClick={() => setActiveDay(day)}
-              className={
-                isActive
-                  ? 'bg-sky-800 hover:bg-sky-900 text-white'
-                  : 'bg-gray-200 hover:bg-gray-300 text-gray-700 border-gray-300'
-              }
-            >
-              {day.toUpperCase()}
-              {isActive && (
-                <Badge className="ml-2" variant="secondary">
-                  {count}
-                </Badge>
-              )}
-            </Button>
-          )
-        })}
       </div>
 
-      {/* RESULT PANEL */}
-      {result && (
-        <div
-          className={`relative mx-auto w-full max-w-md rounded-xl p-4 text-white space-y-2
-          ${result.type === 'success' ? 'bg-green-600' : 'bg-red-600'}
-        `}
-        >
-          {/* Close Button */}
-          <button
-            onClick={() => setResult(null)}
-            className="absolute top-3 right-3"
-          >
-            <X size={18} />
-          </button>
-
-          <div className="flex items-center gap-2">
-            {result.type === 'success' ? <CheckCircle2 /> : <XCircle />}
-            <span className="font-bold text-base">{result.message}</span>
-          </div>
-
-          <div className="mt-4 rounded-xl bg-white/20 p-4 space-y-3 text-sm">
-            <div className="grid grid-cols-3 gap-2">
-              <span className="opacity-80">Reg No</span>
-              <span className="col-span-2 font-semibold">{result.regNum}</span>
-            </div>
-
-            <div className="grid grid-cols-3 gap-2">
-              <span className="opacity-80">Name</span>
-              <span className="col-span-2 font-semibold">{result.name}</span>
-            </div>
-
-            <div className="grid grid-cols-3 gap-2">
-              <span className="opacity-80">Mobile</span>
-              <span className="col-span-2 font-semibold">{result.mobile}</span>
-            </div>
-          </div>
+      <div className="mx-auto max-w-xl space-y-6 p-4">
+        <div className="text-center">
+          <p className="text-sm text-muted-foreground">Total Attendance</p>
+          <h2 className="text-4xl font-bold text-orange-800">{count}</h2>
         </div>
-      )}
 
-      {/* Input */}
-      <div className="w-full max-w-xl space-y-4 p-4">
+        {result && (
+          <div
+            className={`relative rounded-xl p-4 text-white ${
+              result.type === 'success' ? 'bg-green-600' : 'bg-red-600'
+            }`}
+          >
+            <button
+              onClick={() => setResult(null)}
+              className="absolute right-3 top-3"
+            >
+              <X size={18} />
+            </button>
+
+            <div className="flex items-center gap-2">
+              {result.type === 'success' ? <CheckCircle2 /> : <XCircle />}
+
+              <span className="font-bold">{result.message}</span>
+            </div>
+
+            <div className="mt-4 space-y-2 rounded-lg bg-white/20 p-4">
+              <p>
+                <strong>Reg No:</strong> {result.regNum}
+              </p>
+              <p>
+                <strong>Name:</strong> {result.name}
+              </p>
+              <p>
+                <strong>Mobile:</strong> {result.mobile}
+              </p>
+            </div>
+          </div>
+        )}
+
         <input
           ref={inputRef}
           value={scanValue}
           onChange={(e) => setScanValue(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Scanned Value..."
-          className="w-full h-20 text-2xl px-6 rounded-2xl border shadow-lg focus:ring-2 focus:ring-primary outline-none"
+          placeholder="Scan QR / Barcode..."
           autoFocus
+          className="h-20 w-full rounded-2xl border px-6 text-2xl shadow-lg outline-none focus:ring-2 focus:ring-primary"
         />
 
         <Button
           onClick={() => markAttendance(scanValue.trim())}
           disabled={processing}
-          className="w-full h-14 text-lg bg-sky-800 hover:bg-sky-900"
+          className="h-14 w-full bg-orange-800 text-lg hover:bg-orange-900"
         >
           {processing ? 'Submitting...' : 'Submit'}
         </Button>

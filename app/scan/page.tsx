@@ -83,7 +83,7 @@ export default function ScanPage() {
                 {/* 🔥 Bottom CTA bar (same as your buttons) */}
                 <div className="px-4 pb-4">
                   <Button
-                    className="w-full bg-sky-800 hover:bg-sky-900 text-white"
+                    className="w-full bg-orange-800 hover:bg-orange-900 text-white"
                   >
                     Start
                   </Button>
