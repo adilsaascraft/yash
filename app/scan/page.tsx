@@ -36,15 +36,6 @@ export default function ScanPage() {
           priority
           className="w-full h-auto object-contain"
         />
-
-        {/* Back Button */}
-        <Button
-          onClick={() => router.back()}
-          size="icon"
-          className="absolute top-4 left-4 bg-white/90 hover:bg-white text-black shadow-md"
-        >
-          <ArrowLeft />
-        </Button>
       </div>
 
       {/* Heading */}
@@ -58,7 +49,7 @@ export default function ScanPage() {
       </div>
 
       {/* Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl px-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl px-4 pb-4">
 
         {cards.map((card, i) => {
           const Icon = card.icon
