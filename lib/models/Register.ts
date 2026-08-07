@@ -2,27 +2,44 @@ import mongoose, { Schema, models } from 'mongoose'
 
 const RegisterSchema = new Schema(
   {
-    name: { type: String, required: true },
-    address: { type: String, required: true },
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
     mobile: {
       type: String,
       required: true,
-      match: [/^\d{10}$/, 'Mobile must be 10 digits'],
       unique: true,
+      trim: true,
+      match: [/^\d{10}$/, 'Mobile must be 10 digits'],
     },
-    profession: { type: String, required: true },
-    accompany: { type: String },
-    regNum: { type: String, unique: true },
-    generateQR: { type: Boolean, default: false },
+
+    regNum: {
+      type: String,
+      unique: true,
+      required: true,
+    },
+
+    generateQR: {
+      type: Boolean,
+      default: false,
+    },
+
     dayOne: {
       type: String,
+      default: null,
     },
 
     dayTwo: {
       type: String,
+      default: null,
     },
   },
-  { timestamps: true },
+  {
+    timestamps: true,
+  },
 )
 
 export default models.Register || mongoose.model('Register', RegisterSchema)
