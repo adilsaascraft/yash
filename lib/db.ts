@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 
-const MONGO_URI =
-  'mongodb+srv://adil4474:adil4474@personal.lcfco1d.mongodb.net/yash_gazal?appName=Personal';
+const MONGO_URI = process.env.MONGO_URI!;
 
 if (!MONGO_URI) {
   throw new Error("❌ MONGO_URI not defined");
