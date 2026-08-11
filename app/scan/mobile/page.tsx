@@ -6,24 +6,19 @@ import Image from 'next/image'
 import useSWR from 'swr'
 import { Html5Qrcode } from 'html5-qrcode'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, CheckCircle2, XCircle } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, X, XCircle } from 'lucide-react'
 import { toast } from 'sonner'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
-type ScanResult =
-  | {
-      type: 'success'
-      message: string
-      name: string
-      regNum: string
-      mobile: string
-    }
-  | {
-      type: 'error'
-      message: string
-    }
-  | null
+type ScanResult = {
+  type: 'success' | 'error'
+  message: string
+  name: string
+  mobile: string
+  regNum: string
+} | null
+
 
 export default function QrScanner() {
   const router = useRouter()
@@ -102,6 +97,9 @@ export default function QrScanner() {
       setResult({
         type: 'error',
         message: err.message || 'Scan failed',
+        regNum,
+        name: '-',
+        mobile: '-',
       })
     }
   }
@@ -170,28 +168,37 @@ export default function QrScanner() {
       {/* Result */}
       {result && (
         <div
-          className={`mx-auto max-w-sm space-y-2 rounded-lg p-4 text-white ${
+          className={`relative mx-auto max-w-sm rounded-xl p-4 text-white ${
             result.type === 'success' ? 'bg-green-600' : 'bg-red-600'
           }`}
         >
+          <button
+            onClick={() => setResult(null)}
+            className="absolute right-3 top-3"
+            aria-label="Close result"
+          >
+            <X size={18} />
+          </button>
+
           <div className="flex items-center gap-2">
             {result.type === 'success' ? <CheckCircle2 /> : <XCircle />}
+
             <span className="font-bold">{result.message}</span>
           </div>
 
-          {result.type === 'success' && (
-            <>
-              <p>
-                <strong>Reg No:</strong> {result.regNum}
-              </p>
-              <p>
-                <strong>Name:</strong> {result.name}
-              </p>
-              <p>
-                <strong>Mobile:</strong> {result.mobile}
-              </p>
-            </>
-          )}
+          <div className="mt-4 space-y-2 rounded-lg bg-white/20 p-4">
+            <p>
+              <strong>Reg No:</strong> {result.regNum}
+            </p>
+
+            <p>
+              <strong>Name:</strong> {result.name}
+            </p>
+
+            <p>
+              <strong>Mobile:</strong> {result.mobile}
+            </p>
+          </div>
         </div>
       )}
 
