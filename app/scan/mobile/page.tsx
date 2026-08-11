@@ -62,47 +62,61 @@ export default function QrScanner() {
     }
   }
 
-  const markDelivered = async (regNum: string) => {
-    try {
-      const res = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ regNum }),
-      })
 
-      const data = await res.json()
+const markDelivered = async (regNum: string) => {
+  try {
+    const res = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ regNum }),
+    })
 
-      if (!data.success) {
-        throw new Error(data.message)
-      }
+    const data = await res.json()
+    const attendee = data.data || {}
 
-      playBeep('success')
-      navigator.vibrate?.(120)
-
-      setResult({
-        type: 'success',
-        message: data.message,
-        regNum: data.data.regNum,
-        name: data.data.name,
-        mobile: data.data.mobile,
-      })
-
-      mutate()
-    } catch (err: any) {
+    if (!data.success) {
       playBeep('error')
       navigator.vibrate?.([80, 40, 80])
 
       setResult({
         type: 'error',
-        message: err.message || 'Scan failed',
-        regNum,
-        name: '-',
-        mobile: '-',
+        message: data.message || 'Scan failed',
+        regNum: attendee.regNum || regNum,
+        name: attendee.name || '-',
+        mobile: attendee.mobile || '-',
       })
+
+      return
     }
+
+    playBeep('success')
+    navigator.vibrate?.(120)
+
+    setResult({
+      type: 'success',
+      message: data.message,
+      regNum: attendee.regNum || regNum,
+      name: attendee.name || '-',
+      mobile: attendee.mobile || '-',
+    })
+
+    mutate()
+  } catch (err: any) {
+    playBeep('error')
+    navigator.vibrate?.([80, 40, 80])
+
+    setResult({
+      type: 'error',
+      message: err.message || 'Scan failed',
+      regNum,
+      name: '-',
+      mobile: '-',
+    })
   }
+}
+
 
   const startScan = async () => {
     if (isScanning) return
