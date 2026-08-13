@@ -15,7 +15,7 @@ type ScanResult = {
   type: 'success' | 'error'
   message: string
   name: string
-  mobile: string
+  mobile_number: string
   regNum: string
 } | null
 
@@ -85,7 +85,7 @@ const markDelivered = async (regNum: string) => {
         message: data.message || 'Scan failed',
         regNum: attendee.regNum || regNum,
         name: attendee.name || '-',
-        mobile: attendee.mobile || '-',
+        mobile_number: attendee.mobile_number || '-',
       })
 
       return
@@ -99,7 +99,7 @@ const markDelivered = async (regNum: string) => {
       message: data.message,
       regNum: attendee.regNum || regNum,
       name: attendee.name || '-',
-      mobile: attendee.mobile || '-',
+      mobile_number: attendee.mobile_number || '-',
     })
 
     mutate()
@@ -112,7 +112,7 @@ const markDelivered = async (regNum: string) => {
       message: err.message || 'Scan failed',
       regNum,
       name: '-',
-      mobile: '-',
+      mobile_number: '-',
     })
   }
 }
@@ -210,7 +210,7 @@ const markDelivered = async (regNum: string) => {
             </p>
 
             <p>
-              <strong>Mobile:</strong> {result.mobile}
+              <strong>Mobile:</strong> {result.mobile_number}
             </p>
           </div>
         </div>

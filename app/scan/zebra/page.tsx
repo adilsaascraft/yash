@@ -14,7 +14,7 @@ type ScanResult = {
   type: 'success' | 'error'
   message: string
   name: string
-  mobile: string
+  mobile_number: string
   regNum: string
 } | null
 
@@ -57,7 +57,7 @@ export default function ZebraGateScanner() {
         type: json.success ? 'success' : 'error',
         message: json.message,
         name: attendee.name || '-',
-        mobile: attendee.mobile || '-',
+        mobile_number: attendee.mobile_number || '-',
         regNum: attendee.regNum || regNum,
       })
 
@@ -135,7 +135,7 @@ export default function ZebraGateScanner() {
                 <strong>Name:</strong> {result.name}
               </p>
               <p>
-                <strong>Mobile:</strong> {result.mobile}
+                <strong>Mobile:</strong> {result.mobile_number}
               </p>
             </div>
           </div>
