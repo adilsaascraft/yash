@@ -31,7 +31,7 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          message: 'Day 1 already scanned',
+          message: 'Qr code is already scanned',
           data: register,
         },
         { status: 404 },
@@ -43,7 +43,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       success: true,
-      message: 'Day 1 scanned successfully',
+      message: 'Qr code scanned successfully',
       data: register,
     })
   } catch (error) {
